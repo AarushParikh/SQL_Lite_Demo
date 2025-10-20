@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import { deleteItem, fetchItems, insertItem, updateItem, type Item } from "../data/db";
+import SortDropdown from "./components/DropDown";
 import ItemRow from "./components/ItemRow";
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
    * Without the provider, this hook would throw an error.
    */
   const db = useSQLiteContext();
+  const [sortOption, setSortOption] = useState<string>("name_asc");
 
   /**
    * Form State
@@ -51,8 +53,9 @@ export default function App() {
    * not every time loadItems function is redefined.
    */
   useEffect(() => {
-    loadItems();
-  }, []);
+  loadItems();
+}, [sortOption]); // reload whenever sort option changes
+
 
   /**
    * Load Items Function
@@ -68,13 +71,30 @@ export default function App() {
    * @returns Promise that resolves when items are successfully loaded
    */
   const loadItems = async () => {
-    try {
-      const value = await fetchItems(db);
-      setItems(value);
-    } catch (err) {
-      console.log("Failed to fetch items", err);
+  try {
+    const value = await fetchItems(db);
+    let sortedItems = [...value];
+    switch (sortOption) {
+      case "name_asc":
+        sortedItems.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "name_desc":
+        sortedItems.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "qty_asc":
+        sortedItems.sort((a, b) => a.quantity - b.quantity);
+        break;
+      case "qty_desc":
+        sortedItems.sort((a, b) => b.quantity - a.quantity);
+        break;
     }
-  };
+
+    setItems(sortedItems);
+  } catch (err) {
+    console.log("Failed to fetch items", err);
+  }
+};
+
 
   /**
    * Save Item Function
@@ -258,6 +278,7 @@ export default function App() {
               marginRight: 14,
             }}
           />
+          
         )}
         renderItem={({ item }) => (
           <ItemRow
@@ -278,6 +299,8 @@ export default function App() {
             : undefined
         }
       />
+      <SortDropdown value={sortOption} onChange={setSortOption} />
+
     </View>
   );
 }
