@@ -265,6 +265,8 @@ export default function App() {
         title={editingId === null ? "Save Item" : "Update Item"}
         onPress={saveOrUpdate}
       />
+            <SortDropdown value={sortOption} onChange={setSortOption} />
+
       <FlatList
         style={styles.list}
         data={items}
@@ -299,7 +301,6 @@ export default function App() {
             : undefined
         }
       />
-      <SortDropdown value={sortOption} onChange={setSortOption} />
 
     </View>
   );
